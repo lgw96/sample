@@ -1,0 +1,163 @@
+js 구성 : import { LightningElement, api, wire, track } from 'lwc';
+
+-- OnChagne -- 
+html
+onchange = {메소드명}
+js
+메소드명(event) {
+    event.target.value -> event되는 값으로 변경
+}
+
+-- 변수명 Get --
+html 
+{변수명}
+js
+get 변수명() {
+    -> 선언한 변수명을 Get으로 값 변경
+                 return '{this.다른 변수명}'.toUpperCase();
+}
+
+-- CheckBox Type --
+html
+<lightning-input type="checkbox" onchange="{test}"></litghtning-input>
+js
+test(event){
+    event.target.checked; => Checkbox 형태의 경우 Checked로 값 확인 가능
+}
+
+-- for:each --
+<template for:each={tests} for:item="test">
+    <li key={contact.Id}>
+        {contact.Name}
+    </li>
+</template>
+js에서 선언된 contacts의 Key값 기준으로 for each 반복
+
+-- iterator --
+<template iterator:it={tests}>
+    <div if:true="{it.check}">
+</template>
+iterator -> iterator:it는 변수값을 it기준으로 반복 실행
+
+-- Render --
+1 JS : N Html
+각각의 Html에 switchTemplate 메소드 선언
+
+Html
+<lightning-button label="Switch Templates" 
+                onclick={switchTemplate}>
+</lightning-button>
+
+JS
+import templateOne from './templateOne.html';
+import templateTwo from './templateTwo.html';
+
+switchTemplate(){ 
+        this.templateOne = this.templateOne === true ? false : true; 
+}
+템플릿 클릭 시, 해당 Html값 체크 (templateOne -> Boolean Type 값 체크)
+
+Render 함수를 통해 해당 템플릿 setting
+render() {
+        return this.templateOne ? templateOne : templateTwo;
+}
+
+-- tarctk --
+@track 선언 시, 해당 값으로 선언된 변수를 지속적인 렌더링 해줌
+
+-- api --
+@api 선언 시, 타 템플릿 (부모 - 자식)간 해당 변수를 호출하여 사용 가능
+
+-- querySelector --
+this.template.querySelector('div'); -> 해당 Template의 첫번째 div 데이터를  가져옴
+this.template.querySelectorAll('div'); -> 해당 Template의 모든 div 데이터를  가져옴
+
+-- Show Function --
+parent html -> child html
+parent.html
+<c-childe show="{test}"></c-chuild>
+parent.js
+@api test = false;
+show 라는 Boolean 값을 통해 하위 Component 호출 가능
+
+-- [Set up Button 사용] - premission View 제어 --
+html(permssion method 호출)
+<setup-button disabled={isSetupEnabled} onclick={openSetup}></setup-button>
+
+JS (Premssion 정보 등록)
+import hasPermission from '@salesforce/customPermission/PermissionName';
+import hasPermission from '@salesforce/customPermission/namespace__PermissionName'; 
+
+export default class App extends LightingElement {
+    get isSetupEnabled() {
+        return hasViewSetup;
+    }
+
+    openSetup(e) {...}
+}
+
+<Load Record>
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi'; -> 현재의 페이지에 대한 api data 가져옴
+@wire(gertRecord)를 통해 현재 Record에 대한 id 및 데이터값을 가져온다.
+//this.record.data 현재 레코드 데이터
+//getFieldValue -> 현재 레코드에 대한 특정 필드값 get
+return this.record.data ? getFieldValue(this.record.data, NAME_FIELD) : '';
+
+<setCustomValidity> lwc custom validation
+const inputCmp = this.template.querySelector("lightning-input"); --> 템플릿 검색 후
+const value = inputCmp.value;
+if (!value.includes("Burlington")) {
+       inputCmp.setCustomValidity("The account name must include 'Burlington'");
+}
+데이터가 없을 경우, 커스텀 VAlidate를 표출
+
+connectedCallback : parent -> child로 데이터 보낼 시, 보내는 데이터에 대하여
+
+<iterator 종류>
+https://developer.salesforce.com/docs/component-library/documentation/en/lwc/reference_directives
+
+<iterator:it 사용해서 표출방법>
+https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.create_lists
+사유 : for:each문 안에서 Div Tag 적용불가
+
+<Parent template -> Child template>
+Button 클릭하여 Child template 개수 추가
+
+<Custom Event, EventTarget.dispatchEvent()>
+CustomEvent : Event를 생성하는 생성자
+EventTarget.dispatchEvent() : 생성한 Event(CustomEvent)를 전달하여 메소드를 호출하는 구성
+
+Paren Template에서 close라는 생성자를 생성하고, ParentTemplate에서는 해당 생성자를 이용해 Actoin을 취한다.
+Parent Template
+<c-child onclose="{!c.closeAction}"></c-child>
+
+Child Template
+closeModal(){
+  this.dispatchEvent(new CustomEvent('close')); //on이라는 예약어를 이용하여 사용
+}
+
+<FormFactor>
+기종을 구분할 때 사용하는 Function (모바일, 데스크탑 등)
+import formFactor from '@salesforce/client/formFactor';
+
+(example)
+var device = $A.get("$Browser.formFactor");
+if (device != "DESKTOP") cmp.set('v.ismobile', true);
+
+<ShowToastEvent>
+aura의 경우는 그냥 ShowToasEvent를 바로 선언 시 사용이 가능했으나 lwc의 경우는 js에 직접 import를 한 후 사용이 가능
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+
+(example)
+showMyToast(variant, title, msg, mode){
+  const event = new ShowToastEvent({
+    "variant" : varinat,
+    "title" : title,
+    "msg" : msg,
+    "mode" : mode || "dismissible'
+   });
+   this.dispatchEvent(event); //해당 event를 예약
+}
+
+<@wired>
+일반적으로 해당 컴퍼넌가 로드될 경우 가져오는 데이터를 Wired를 통해 데이터를 Setting
