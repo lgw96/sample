@@ -113,13 +113,6 @@ if (!value.includes("Burlington")) {
 
 connectedCallback : parent -> child로 데이터 보낼 시, 보내는 데이터에 대하여
 
-<iterator 종류>
-https://developer.salesforce.com/docs/component-library/documentation/en/lwc/reference_directives
-
-<iterator:it 사용해서 표출방법>
-https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.create_lists
-사유 : for:each문 안에서 Div Tag 적용불가
-
 <Parent template -> Child template>
 Button 클릭하여 Child template 개수 추가
 
@@ -161,3 +154,31 @@ showMyToast(variant, title, msg, mode){
 
 <@wired>
 일반적으로 해당 컴퍼넌가 로드될 경우 가져오는 데이터를 Wired를 통해 데이터를 Setting
+
+<URL 이동>
+URL 이동 방법 : https://www.sfdcpoint.com/salesforce/navigation-service-in-lwc/
+1) View
+2) Edit
+3) Recent List View
+4) Relate List View
+5) Chatter home
+6) Report
+7) Tab
+8) SFDCOoint(WebPage)
+9) Files
+10) VF Page
+11) Lightning Component
+
+<iterator 종류>
+https://developer.salesforce.com/docs/component-library/documentation/en/lwc/reference_directives
+
+<iterator:it 사용해서 표출방법>
+https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.create_lists
+사유 : for:each문 안에서 Div Tag 적용불가
+해결책 : 1) <ul>태그 안에서 iterator:it적용하여 Div Tag 출력 하도록 -> X td구조 표현 불가
+해결책 : 2) https://developer.salesforce.com/docs/component-library/bundle/lightning-datatable/example -> DataTable구조를 통한 데이터 설계 작업 필요
+
+문제 1) : Child에서 데이터 구성 후 Parent에서 생성해보기
+문제 2) : Parent의 데이터를 Childe로 보내서 데이터 출력
+문제 3) : 데이터를 통한 Chart JS 표출 //참고 : https://salesforcecodex.com/salesforce/covid19-live-chart-in-lightning-web-component/
+문제 4) : 
