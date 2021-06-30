@@ -1,0 +1,60 @@
+<<HTML>>
+<lightning-combobox
+            label="Type"
+            value={selectedOption}
+            options={options}>
+</lightning-combobox>
+
+<<JS>>
+import { LightningElement, api, track, wire } from 'lwc';
+import { getPicklistValues, getObjectInfo } from 'lightning/uiObjectInfoApi';
+
+import acc from '@salesforce/schema/Account';
+import priorityField from '@salesforce/schema/Account.Type';
+
+export default class AccountCreateFormItem extends LightningElement {
+    
+    @track options;
+    
+    //private
+    _recordTypeId;
+
+    @wire(getObjectInfo, { objectApiName: acc })
+    getObjectData({ error, data }) {
+        if (data) {
+            if (this._recordTypeId == null) {
+                this._recordTypeId = data.defaultRecordTypeId;
+                console.log(this._recordTypeId);
+            //this.apiFieldName = this.objectName + '.' + this.fieldName;
+            //this.fieldLabel = data.fields[this.fieldName].label;
+            }
+        } else if (error) {
+            // Handle error
+            console.log('==============Error  ');
+            console.log(error);
+        }
+    }
+
+    @wire(getPicklistValues, { recordTypeId: '$_recordTypeId', fieldApiName: priorityField })
+    getPicklistValues({ error, data }) {
+        if (data) {
+            console.log(data);
+            // Map picklist values
+            this.options = data.values.map(plValue => {
+                return {
+                    label: plValue.label,
+                    value: plValue.value
+                };
+            });
+
+        } else if (error) {
+            // Handle error
+            console.log('==============Error  ' + error);
+            console.log(error);
+        }
+    }
+   
+    selectedOption(event){
+        this.selectedOption = event.target.value;
+    }
+}
