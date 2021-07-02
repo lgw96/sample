@@ -1,0 +1,10 @@
+-- html --
+<lightning-input
+  value={message}
+  label="Input Check"
+  plcaeholder="Check this field"
+  onblur={handleblur}
+></lightning-input>
+
+-- JS --
+handleBlur
