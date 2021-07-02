@@ -178,7 +178,7 @@ https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc
 해결책 : 1) <ul>태그 안에서 iterator:it적용하여 Div Tag 출력 하도록 -> X td구조 표현 불가
 해결책 : 2) https://developer.salesforce.com/docs/component-library/bundle/lightning-datatable/example -> DataTable구조를 통한 데이터 설계 작업 필요
 
-문제 1) : Child에서 데이터 구성 후 Parent에서 생성해보기
-문제 2) : Parent의 데이터를 Childe로 보내서 데이터 출력
+문제 1) : Child에서 데이터 구성 후 Parent에서 생성해보기 - 완료
+문제 2) : Parent의 데이터를 Childe로 보내서 데이터 출력 -> 1과 같은 방식, 1의 데이터를 iteratoin으로 2
 문제 3) : 데이터를 통한 Chart JS 표출 //참고 : https://salesforcecodex.com/salesforce/covid19-live-chart-in-lightning-web-component/
 문제 4) : 
