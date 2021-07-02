@@ -1,0 +1,14 @@
+-- Html --
+<div if:ture={showValue}>
+  Success Value
+</div>
+<button onclick={showTest}></button>
+
+-- JS --
+@track showValue = false;
+
+handleClick(e){
+  this.showValue = true;
+}
+
+
