@@ -1,0 +1,230 @@
+-- Parent html --
+<lightning-button label="Add Accounts" onclick={handleADDchild}></lightning-button> //추가
+<lightning-button label="Save Accounts" onclick={handleSAVEchild}></lightning-button> //저장
+
+<template for:each={items} for:item='item' for:index="idx"> 
+    <div key={item.index}>
+        <c-child-item 
+            index={idx}
+            item={item}
+            onremove={handleRemoveChild} //event는 하위 child에서 등록
+        ></c-child-item>
+    </div>
+</template>
+
+-- Child html --
+<div class="slds-m-around_medium">
+    <div class="slds-page-header__name-title">
+        <h1>
+            <span class="slds-page-header__title slds-truncate mt_top_header_title" title="Index 정보">#{getcIdx}</span>
+        </h1>
+    </div>
+    <lightning-button label="Delete Accounts" onclick={handleDeletechild}></lightning-button> //Child 삭제 -> event 상위로 호출
+    <lightning-input label="Account Name" type="text" value={accName} placeholder="insert Name" onchange={handleChangeName} required></lightning-input>
+    <lightning-combobox
+        label="Type"
+        value={selectedOption}
+        onchange={handleChangeType}
+        options={typelist}>
+    </lightning-combobox>
+</div>
+
+-- Parent js --
+@track items = [];
+
+//private
+_items = []; //데이터 List를 담아두는 곳, Remove를 위한 곳
+item = {
+    index : 0,
+    Name : '',
+    Type : ''
+};
+
+//최초 setting시 Constructor로 기본 데이터값 셋팅
+constructor() {
+    super();
+
+    this._items.push(this.item);
+    this.items.push(this.item);
+
+    console.log('parent Constructor :::: ', this._items);
+    console.log('parent Constructor :::: ', this.items);
+}
+
+//생성 추가
+handleADDchild(event){
+    try {
+        let templateItems = this.template.querySelectorAll('c-market-trend-item');
+        let item = JSON.parse(JSON.stringify(this.item));
+        let len = this._items.length;
+        item.index = len + 1;
+        this._items.push(item);
+        this.items.push(item);
+        console.log('add item end', this.items, '::::', this._items);
+    } catch (error) {
+        console.log('error ::::', error);
+    }
+}
+
+handleSAVEchild(event){
+    try {
+        //하위 Template에 저장되어있는 데이터 가져옴
+        let templateItems = this.template.querySelectorAll('c-account-Create-Form-Item');
+            for(let i=0, len=templateItems.length; i < len; i++){
+                let item = templateItems[i];
+
+                //child template의 저장되어있는 값 호출
+                this._items.push(item.getItem());
+            }
+        registerAccounts({jsonString : JSON.stringify(this._items)})
+            .then((results) => {
+                this.dispatchEvent(
+                    this.notifyFuc('생성 성공', '거래처 생성에 성공하였습니다.', 'Success')
+                );
+            }).catch((error) => {
+                this.dispatchEvent(
+                    this.notifyFuc('생성 실패', error.body.message, 'Fail')
+                );
+            });
+
+    } catch (ex) {
+        console.log('ex :::: ', ex);
+    }
+
+}
+handleRemoveChild(event){
+    try {
+        let templateItems = this.template.querySelectorAll('c-account-Create-Form-Item');
+        console.log('length Check', templateItems.length);
+        if( templateItems.length > 1 ) {
+            let index = event.detail.index;
+            console.log('Delete Parent Index', event.detail.index);
+            console.log('_items :::: ', this._items);
+            console.log('items :::: ', this.items);
+            this._items.splice(index, 1);
+            this.items = [];
+            for(let i=0,len=this._items.length;i<len;i++){
+                this.items.push(this._items[i]);
+            }
+        } else {
+            this.notifyFuc('삭제 멈춰', '삭제 못해', 'U can\'t Delete this Account');
+        }
+    } catch (ex) {
+        console.log('Delete Exception :::: ', ex);
+    }
+}
+
+notifyFuc(title, message, variant) {
+    if (this.notifyViaAlerts) {
+        // Notify via alert
+        // eslint-disable-next-line no-alert
+        alert(`${title}\n${message}`);
+    } else {
+        // Notify via toast
+        const toastEvent = new ShowToastEvent({ title, message, variant });
+        this.dispatchEvent(toastEvent);
+    }
+}
+
+-- Child ks --
+@api item;
+@api index;
+@api
+getItem(){
+    return this._item;
+}
+get getcIdx(){
+    return (this.index + 1);
+}
+
+@track accName;
+@track typelist;
+@track _item = {
+    index : 0,
+    Name : '',
+    Type : ''
+}
+
+//private
+_recordTypeId;
+
+@wire(getObjectInfo, { objectApiName: acc })
+getObjectData({ error, data }) {
+    if (data) {
+        if (this._recordTypeId == null) {
+            this._recordTypeId = data.defaultRecordTypeId;
+        }
+    } else if (error) {
+        console.log(error);
+    }
+}
+
+@wire(getPicklistValues, { recordTypeId: '$_recordTypeId', fieldApiName: priorityField })
+getPicklistValues({ error, data }) {
+    if (data) {
+        console.log(data);
+        // Map picklist values
+        this.typelist = data.values.map(plValue => {
+            return {
+                label: plValue.label,
+                value: plValue.value
+            };
+        });
+    } else if (error) {
+        console.log('==============Error  ' + error);
+    }
+}
+
+/*
+optionMapping(optionInfos){
+    try{
+        let options = [];
+        for(let i=0,len=optionInfos.length; i < len; i++){
+            let option = {
+                label : optionInfos[i].label,
+                value : optionInfos[i].value,
+            };
+            options.push(option);
+        }
+        return options;
+    }catch(err){
+        console.error('err :::: ' + err);
+    }
+}
+
+*/
+handleDeletechild(event){
+    try {
+        const removeEvent = new CustomEvent('remove', {
+            detail : {
+                index : this.index,
+                item : this._item
+            }
+        });
+        console.log('Delete Child Index :::: ', this.index);
+        this.dispatchEvent(removeEvent);
+    } catch (ex) {
+        console.log('ex :::: ' + ex);
+    }
+
+}
+
+handleChangeName(event){
+    try {
+        this.accName = event.target.value;
+        this._item.Name = event.target.value;
+
+    } catch (ex) {
+        console.log('ex :::: ', ex);
+    }
+}
+
+handleChangeType(event){
+    try {
+        this.selectedOption = event.target.value;
+        this._item.Type = event.target.value;
+
+    } catch (ex) {
+        console.log('ex :::: ', ex);
+    }
+}
